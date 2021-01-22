@@ -1,5 +1,6 @@
 const canvSig = document.getElementById("canvasSignature");
-const inpSigVal = document.getElementById("inputSignature").value;
+const inputSigVal = document.getElementById("inputSignature");
+
 const ctx = canvSig.getContext("2d");
 
 let drawing = false;
@@ -7,14 +8,12 @@ let x = 0;
 let y = 0;
 
 canvSig.addEventListener("mousedown", (e) => {
-    console.log("mousedown");
     x = e.offsetX;
     y = e.offsetY;
     drawing = true;
 });
 
 canvSig.addEventListener("mousemove", (e) => {
-    console.log("mouseup");
     if (drawing === true) {
         draw(ctx, x, y, e.offsetX, e.offsetY);
         x = e.offsetX;
@@ -23,12 +22,13 @@ canvSig.addEventListener("mousemove", (e) => {
 });
 
 window.addEventListener("mouseup", (e) => {
+    console.log("MOSE GOES UP");
     if (drawing === true) {
         draw(ctx, x, y, e.offsetX, e.offsetY);
         x = 0;
         y = 0;
         drawing = false;
-        inputSigVal = canvas.toDataURL();
+        inputSigVal.value = canvSig.toDataURL();
     }
 });
 

@@ -6,7 +6,7 @@ const db = spicedPg("postgres:postgres:postgres@localhost:5432/petition");
 // spicedPg('whoDoWeWantToTalkTo:whichUserShouldBeRunningOurQueries:whatPasswordDoesThisUserHave@WhereDoesThisCommuncationHappen:specifiedPortForCommunication/NameOfOurDatabase)
 
 module.exports.showNames = () => {
-    const q = `SELECT first last FROM signatures`;
+    const q = `SELECT first, last FROM signatures`;
     return db.query(q);
 };
 
@@ -16,7 +16,7 @@ module.exports.showAmount = () => {
 };
 
 module.exports.showSignature = (idParam) => {
-    const q = `SELECT signature FROM signatures WHERE id == ($1)`;
+    const q = `SELECT signature FROM signatures WHERE id = ($1)`;
     const params = [idParam];
     return db.query(q, params);
 };

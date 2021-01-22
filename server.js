@@ -32,6 +32,14 @@ app.use(
     })
 );
 
+const csurf = require("csurf");
+app.use(csurf());
+
+app.use(function (req, res, next) {
+    res.setHeader("x-frame-options", "deny");
+    next();
+});
+
 const db = require("./db"); // requiring our db module that holds all the db queries we want to run
 
 /* app.use((req, res, next) => {
@@ -62,7 +70,7 @@ app.get("/petition", (req, res) => {
 });
 
 app.post("/petition", (req, res) => {
-    //console.log(req.body); //gives an object, so we have to look for the row property
+    console.log(req.body); //gives an object, so we have to look for the row property
     db.addSignature(req.body.firstName, req.body.lastName, req.body.signature)
         .then((dbFeedback) => {
             //console.log(id);
@@ -79,9 +87,14 @@ app.get("/thanks", (req, res) => {
     if (req.session.signatureId) {
         db.showSignature(req.session.signatureId)
             .then((userSignature) => {
-                console.log(userSignature);
+                /* console.log(
+                    "results from show Signature: ",
+                    userSignature.rows[0].signature
+                ); */
                 res.render("thanks", {
-                    pageTitel: `Thank you signor, this is your signature: ${userSignature}`,
+                    pageTitel: `Thank you signor, this is your:`,
+
+                    imgSignatureData: userSignature.rows[0].signature,
                 });
             })
             .catch((err) => {
@@ -100,9 +113,10 @@ app.get("/signers", (req, res) => {
     } else {
         db.showNames()
             .then((names) => {
-                console.log(names);
+                console.log(names.rows);
                 res.render("signers", {
-                    pageTitel: `Below you can see some petition signers: ${names}`,
+                    pageTitel: `Below you can see some petition signers:`,
+                    signedNames: names.rows,
                 });
             })
             .catch((err) => {

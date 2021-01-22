@@ -3,9 +3,8 @@
 
 <ul>
     <div>
-        {{#showNames}}
-        {{.}}
-        {{/showNames}}
+        {{#signedNames}}
+        <li> {{first}} {{last}}</li>
+        {{/signedNames}}
     </div>
 </ul>
-<p>{{showNames}}</p>
