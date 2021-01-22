@@ -2,7 +2,7 @@
 
 const spicedPg = require("spiced-pg");
 
-const db = spicedPg("postgres:postgres:postgres@localhost:8080/petition");
+const db = spicedPg("postgres:postgres:postgres@localhost:5432/petition");
 // spicedPg('whoDoWeWantToTalkTo:whichUserShouldBeRunningOurQueries:whatPasswordDoesThisUserHave@WhereDoesThisCommuncationHappen:specifiedPortForCommunication/NameOfOurDatabase)
 
 module.exports.showNames = () => {
@@ -15,9 +15,15 @@ module.exports.showAmount = () => {
     return db.query(q).length;
 };
 
+module.exports.showSignature = (idParam) => {
+    const q = `SELECT signature FROM signatures WHERE id == ($1)`;
+    const params = [idParam];
+    return db.query(q, params);
+};
+
 module.exports.addSignature = (firstName, lastName, signature) => {
     const q = `INSERT INTO signatures (first, last, signature)
-    VALUES ($1,$2,$3)`;
+    VALUES ($1,$2,$3) RETURNING id`;
     const params = [firstName, lastName, signature];
     return db.query(q, params);
 };
@@ -33,3 +39,14 @@ module.exports.addActor = (actorName, actorAge) => {
     const params = [actorName, actorAge];
     return db.query(q, params);
 }; */
+
+/*             .then(({ rows }) => {
+                db.numSignatures({ rows })
+                    .then(({ rows }) => {
+                        res.render("thanks", {
+                            title: "Thanks Page",
+                            layout: "main",
+                            rows,
+                        });
+                    })
+ */

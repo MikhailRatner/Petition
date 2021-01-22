@@ -1,11 +1,11 @@
 <h1>Welcome to the {{pageTitel}} page!</h1>
 
 <form action="" method="POST">
-    <input type="text" class="inputFirstName">
-    <input type="text" class="inputLastName">
-    <input type="hidden" class="inputSignature">
+    <input name="firstName" type="text" id="inputFirstName">
+    <input name="lastName" type="text" id="inputLastName">
+    <input name="signature" type="hidden" id="inputSignature">
     <button>SUBMIT</button>
-    <canvas id="canvasSignature" width="200" height="100"></canvas>
+    <canvas width="200" height="100" id="canvasSignature" ></canvas>
 </form>
 
 {{!-- STILL TO DO:

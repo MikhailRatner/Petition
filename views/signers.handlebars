@@ -1,4 +1,11 @@
 <h1>This is the {{pageTitel}} page!</h1>
 <h2>This are some people who signed this petition as well:</h2>
 
+<ul>
+    <div>
+        {{#showNames}}
+        {{.}}
+        {{/showNames}}
+    </div>
+</ul>
 <p>{{showNames}}</p>

@@ -6,3 +6,5 @@ DROP TABLE IF EXISTS signatures;
      last VARCHAR NOT NULL CHECK (last != ''),
      signature VARCHAR NOT NULL CHECK (signature != '')
  );
+
+ /*first drop sig table then user table, then create user then sig table!?*/
