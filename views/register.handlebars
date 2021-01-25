@@ -5,7 +5,7 @@
     <input name="lastName" type="text" id="inputLastName">
     <input name="email" type="text" id="inputEmail">
     <input name="inputPw" type="text" id="inputPassword">
-    {{!-- <input type="hidden" name="_csrf" value="{{csrfToken}}"> --}}
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <button>SUBMIT</button>
 </form>
-<div>{{> error err=true}}</div>
+<div>{{> error }}</div>

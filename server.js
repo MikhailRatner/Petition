@@ -21,21 +21,93 @@ app.use(
     })
 );
 
-/* const csurf = require("csurf");
+const csurf = require("csurf");
 app.use(csurf());
 app.use(function (req, res, next) {
     res.locals.csrfToken = req.csrfToken();
     next();
-}); */
+});
 
 app.use(function (req, res, next) {
     res.setHeader("x-frame-options", "deny");
     next();
 });
 
-const bcrypt = require("bcryptjs");
+const { hash, compare } = require("./bc");
 
 const db = require("./db"); // requiring our db module that holds all the db queries we want to run
+
+app.get("/register", (req, res) => {
+    res.render("register", {
+        pageTitel: "Registration",
+    });
+});
+
+app.post("/register", (req, res) => {
+    //console.log("INPUT PW:", req.body.inputPw);
+    hash(req.body.inputPw)
+        .then((hashedPW) => {
+            return db.addUser(
+                req.body.firstName,
+                req.body.lastName,
+                req.body.email,
+                hashedPW
+            );
+        })
+        .then((dbFeedback) => {
+            console.log(dbFeedback);
+            req.session.userID = dbFeedback.rows[0].id;
+            //console.log("USER ID: ", req.session.userID);
+            res.redirect("/profile");
+        })
+        .catch((err) => {
+            console.log("error in addUser:", err);
+            res.render("register", {
+                err: true,
+            });
+        });
+});
+
+app.get("/login", (req, res) => {
+    res.render("login", {
+        pageTitel: "Login",
+    });
+});
+
+app.post("/login", (req, res) => {
+    console.log("INPUT EMAIL: ", req.body.email);
+    db.getUserDataByMail(req.body.email)
+        .then((dbFeedback) => {
+            //console.log("DB FEEDBACK PASSWORD: ", dbFeedback.rows[0].password);
+            compare(req.body.inputPw, dbFeedback.rows[0].password).then(
+                (match) => {
+                    console.log("VALUE FROM COMPARE: ", match);
+                    if (match == true) {
+                        req.session.userID = dbFeedback.rows[0].id;
+                        console.log(req.session.userID);
+                        res.redirect("/petition");
+                    } else {
+                        res.render("login", {
+                            err: true,
+                        });
+                    }
+                }
+            );
+        })
+        .catch((err) => {
+            console.log("error in getUserDataByMail:", err);
+            res.render("login", {
+                err: true,
+            });
+        });
+    /*     if ((password = userPassword)) {
+        if (signature) {
+            res.redirect("/thanks");
+        } else {
+            res.redirect("/petition");
+        }
+    } */
+});
 
 app.get("/petition", (req, res) => {
     if (req.session.signatureId) {
@@ -49,62 +121,57 @@ app.get("/petition", (req, res) => {
 });
 
 app.post("/petition", (req, res) => {
-    console.log(req.body); //gives an object, so we have to look for the row property
-    db.addSignature(req.body.firstName, req.body.lastName, req.body.signature)
+    //console.log(req.body); //gives an object, so we have to look for the row property
+    db.addSignature(req.body.signature, req.session.userID)
         .then((dbFeedback) => {
-            //console.log(id);
             req.session.signatureId = dbFeedback.rows[0].id;
-            //console.log(req.session.signatureId);
+            //console.log("SIGNATURE ID: ", req.session.signatureId);
             res.redirect("/thanks");
         })
         .catch((err) => {
             console.log("error in addSignature:", err);
+            res.render("petition", {
+                err: true,
+            });
         });
 });
 
-app.get("/register", (req, res) => {
-    res.render("register", {
-        pageTitel: "Registration",
-        /* csrfToken: req.body["_csrf"], */
-    });
+app.get("/profile", (req, res) => {
+    if (!req.session.userID) {
+        res.redirect("/login");
+    } else {
+        res.render("profile", {
+            pageTitel: "profile",
+        });
+    }
 });
 
-app.post("/register", (req, res) => {
-    /* console.log(req.body["_csrf"]); */
-    db.addUser(
-        req.body.firstName,
-        req.body.lastName,
-        req.body.email,
-        req.body.inputPw
+app.post("/profile", (req, res) => {
+    db.addProfile(
+        req.body.age,
+        req.body.city,
+        req.body.homepage,
+        req.session.userID
     )
-        .then((dbFeedback) => {
-            //console.log(id);
-            req.session.userID = dbFeedback.rows[0].id;
-            console.log(req.session.userID);
-            res.redirect("/petition");
+        .then(() => {
+            res.redirect("/thanks");
         })
         .catch((err) => {
-            console.log("error in addUser:", err);
+            console.log("error in addProfile:", err);
+            res.render("profile", {
+                err: true,
+            });
         });
-});
-
-app.get("/login", (req, res) => {
-    res.render("login", {
-        pageTitel: "Login",
-    });
 });
 
 app.get("/thanks", (req, res) => {
-    if (req.session.signatureId) {
-        db.showSignature(req.session.signatureId)
+    //console.log("SHOW SIGN ID IN THANKS: ", req.session.signatureId);
+    if (req.session.userID) {
+        db.showSignature(req.session.userID)
             .then((userSignature) => {
-                /* console.log(
-                    "results from show Signature: ",
-                    userSignature.rows[0].signature
-                ); */
+                console.log("results from show Signature: ", userSignature);
                 res.render("thanks", {
-                    pageTitel: `Thank you signor, this is your:`,
-
+                    pageTitel: `Thank you`,
                     imgSignatureData: userSignature.rows[0].signature,
                 });
             })
@@ -112,22 +179,20 @@ app.get("/thanks", (req, res) => {
                 console.log("error in showSignature:", err);
             });
     } else {
-        res.redirect("/petition");
+        res.redirect("/register");
     }
-
-    /* res.send("<!doctype html><title>Sign</title><p>Sign for our petition!"); */
 });
 
 app.get("/signers", (req, res) => {
-    if (!req.session.signatureId) {
-        res.redirect("/petition");
+    if (!req.session.userID) {
+        res.redirect("/login");
     } else {
-        db.showNames()
-            .then((names) => {
-                console.log(names.rows);
+        db.getAllSignersData()
+            .then((allData) => {
+                //console.log(allData.rows[0]);
                 res.render("signers", {
-                    pageTitel: `Below you can see some petition signers:`,
-                    signedNames: names.rows,
+                    pageTitel: `signers`,
+                    signedNames: allData.rows[0],
                 });
             })
             .catch((err) => {
@@ -164,6 +229,21 @@ Tampering is prevented because of a second cookie that is automatically added. T
 //What res.render will do is first render the template specified by the first argument. It will then render the layout, passing the rendered main template to it as a property named body. The reason {{{body}}} in the layout uses triple curly braces is to tell Handlebars not to escape HTML control characters such as < and >.
 
 //By default, if you leave out the layout property from the data you pass as the second argument to res.render, Express Handlebars will attempt to use a layout named "main". If you only use one layout and you name it "main.handlebars", you will never have to add a layout property at all.
+
+/*For CSRF:
+ make sure that you have in EVERY form this statement:
+<input type="hidden" name="_csrf" value="{{csrfToken}}">
+so every route which has a form should have it
+
+Then, also check if this is placed after your cookies and urlencoded!
+const csurf = require("csurf");
+app.use(csurf());
+app.use(function (req, res, next) {
+    res.locals.csrfToken = req.csrfToken();
+    next();
+});
+within your server.js
+*/
 
 /* -------------------------------------------------------------
 // getting information from our db

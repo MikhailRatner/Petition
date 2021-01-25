@@ -1,0 +1,10 @@
+<h1>Welcome to the {{pageTitel}} page!</h1>
+
+<form action="" method="POST">
+    <input name="age" type="text" id="inputAge">
+    <input name="city" type="text" id="inputCity">
+    <input name="homepage" type="text" id="inputHomepage">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <button>CONTINUE</button>
+</form>
+<div>{{> error }}</div>

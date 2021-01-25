@@ -3,11 +3,11 @@
 <form action="" method="POST">
 
     <input name="signature" type="hidden" id="inputSignature">
-{{!--     <input type="hidden" name="_csrf" value="{{csrfToken}}">
- --}}    <button>SUBMIT</button>
+<input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <button>SUBMIT</button>
     <canvas width="200" height="100" id="canvasSignature" ></canvas>
 </form>
-<div>{{> error err=true}}</div>
+<div>{{> error }}</div>
 <script src="canvas.js"></script>
 
 
