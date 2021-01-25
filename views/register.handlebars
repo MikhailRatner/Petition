@@ -1,0 +1,11 @@
+<h1>Welcome to the {{pageTitel}} page!</h1>
+
+<form action="" method="POST">
+    <input name="firstName" type="text" id="inputFirstName">
+    <input name="lastName" type="text" id="inputLastName">
+    <input name="email" type="text" id="inputEmail">
+    <input name="inputPw" type="text" id="inputPassword">
+    {{!-- <input type="hidden" name="_csrf" value="{{csrfToken}}"> --}}
+    <button>SUBMIT</button>
+</form>
+<div>{{> error err=true}}</div>

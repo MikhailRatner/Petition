@@ -5,27 +5,35 @@ const spicedPg = require("spiced-pg");
 const db = spicedPg("postgres:postgres:postgres@localhost:5432/petition");
 // spicedPg('whoDoWeWantToTalkTo:whichUserShouldBeRunningOurQueries:whatPasswordDoesThisUserHave@WhereDoesThisCommuncationHappen:specifiedPortForCommunication/NameOfOurDatabase)
 
-module.exports.showNames = () => {
-    const q = `SELECT first, last FROM signatures`;
-    return db.query(q);
+module.exports.addUser = (firstName, lastName, email, password) => {
+    const q = `INSERT INTO users (first, last, email, password)
+    VALUES ($1,$2,$3,$4) RETURNING id, email`;
+    const params = [firstName, lastName, email, password];
+    return db.query(q, params);
 };
 
-module.exports.showAmount = () => {
-    const q = `SELECT first FROM signatures`;
-    return db.query(q).length;
+module.exports.showUserByMail = (email) => {
+    const q = `SELECT first, last FROM users WHERE email = ($1)`;
+    const params = [email];
+    return db.query(q, params);
+};
+
+module.exports.addSignature = (signature, userID) => {
+    const q = `INSERT INTO signatures (signature, user_id)
+    VALUES ($1,$2,$3) RETURNING id`;
+    const params = [signature, userID];
+    return db.query(q, params);
 };
 
 module.exports.showSignature = (idParam) => {
-    const q = `SELECT signature FROM signatures WHERE id = ($1)`;
+    const q = `SELECT signature FROM signatures WHERE user_id = ($1)`;
     const params = [idParam];
     return db.query(q, params);
 };
 
-module.exports.addSignature = (firstName, lastName, signature) => {
-    const q = `INSERT INTO signatures (first, last, signature)
-    VALUES ($1,$2,$3) RETURNING id`;
-    const params = [firstName, lastName, signature];
-    return db.query(q, params);
+module.exports.showAmount = () => {
+    const q = `SELECT id FROM signatures`;
+    return db.query(q).length;
 };
 
 /* module.exports.getActors = () => {
@@ -38,7 +46,14 @@ module.exports.addActor = (actorName, actorAge) => {
     VALUES ($1,$2)`;
     const params = [actorName, actorAge];
     return db.query(q, params);
-}; */
+};
+
+module.exports.showNames = () => {
+    const q = `SELECT first, last FROM users`;
+    return db.query(q);
+};
+
+*/
 
 /*             .then(({ rows }) => {
                 db.numSignatures({ rows })

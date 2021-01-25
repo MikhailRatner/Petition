@@ -1,12 +1,13 @@
 <h1>Welcome to the {{pageTitel}} page!</h1>
 
 <form action="" method="POST">
-    <input name="firstName" type="text" id="inputFirstName">
-    <input name="lastName" type="text" id="inputLastName">
+
     <input name="signature" type="hidden" id="inputSignature">
-    <button>SUBMIT</button>
+{{!--     <input type="hidden" name="_csrf" value="{{csrfToken}}">
+ --}}    <button>SUBMIT</button>
     <canvas width="200" height="100" id="canvasSignature" ></canvas>
 </form>
+<div>{{> error err=true}}</div>
 <script src="canvas.js"></script>
 
 
