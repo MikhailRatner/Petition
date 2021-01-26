@@ -7,6 +7,12 @@ app.set("view engine", "handlebars");
 
 app.use(express.static("public")); // makes sure we serve our static project files
 
+let cookie_sec;
+if (process.env.cookie_secret) {
+    //we are in production
+    cookie_sec = process.env.cookie_secret;
+}
+
 const cookieSession = require("cookie-session");
 app.use(
     cookieSession({
@@ -36,6 +42,7 @@ app.use(function (req, res, next) {
 const { hash, compare } = require("./bc");
 
 const db = require("./db"); // requiring our db module that holds all the db queries we want to run
+const spicedPg = require("spiced-pg");
 
 app.get("/register", (req, res) => {
     res.render("register", {
@@ -203,7 +210,9 @@ app.get("/signers", (req, res) => {
 });
 
 //Start listening for requests.
-app.listen(8080, () => console.log("petition server is listening..."));
+app.listen(process.env.PORT || 8080, () =>
+    console.log("petition server is listening...")
+);
 
 /* ------------------------------------------------------------- */
 
