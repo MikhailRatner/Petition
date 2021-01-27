@@ -48,6 +48,16 @@ const { hash, compare } = require("./bc");
 const db = require("./db"); // requiring our db module that holds all the db queries we want to run
 
 ///////////////////////////////
+//////////HOMEPAGE/////////////
+///////////////////////////////
+
+app.get("/", (req, res) => {
+    res.render("home", {
+        pageTitel: "Home",
+    });
+});
+
+///////////////////////////////
 //////////REGISTER/////////////
 ///////////////////////////////
 
@@ -69,7 +79,7 @@ app.post("/register", (req, res) => {
             );
         })
         .then((dbFeedback) => {
-            console.log(dbFeedback);
+            //console.log("DB FEEDBACK:", dbFeedback);
             req.session.userID = dbFeedback.rows[0].id;
             //console.log("USER ID: ", req.session.userID);
             res.redirect("/profile");
@@ -137,6 +147,7 @@ app.get("/profile", (req, res) => {
     } else {
         res.render("profile", {
             pageTitel: "profile",
+            /* logut: "logoutButton", */
         });
     }
 });
@@ -164,22 +175,30 @@ app.post("/profile", (req, res) => {
 ///////////////////////////////
 
 app.get("/petition", (req, res) => {
-    if (req.session.signatureId) {
-        res.redirect("/thanks");
+    if (!req.session.userID) {
+        res.redirect("/register");
     } else {
-        res.render("petition", {
-            //layout: "main",
-            pageTitel: "Petition signing",
+        db.showSignature(req.session.userID).then((userSignature) => {
+            console.log("results from show Signature: ", userSignature);
+            /* I TESTED THIS BUT IT ALSO DOES NOT WORK:  if (userSignature.rows[0].signature != null) */
+            if (req.session.signatureId) {
+                res.redirect("/thanks");
+            } else {
+                res.render("petition", {
+                    //layout: "main",
+                    pageTitel: "Petition signing",
+                });
+            }
         });
     }
 });
 
 app.post("/petition", (req, res) => {
-    //console.log(req.body); //gives an object, so we have to look for the row property
+    console.log("START PETITION: ", req.body); //gives an object, so we have to look for the row property
     db.addSignature(req.body.signature, req.session.userID)
         .then((dbFeedback) => {
             req.session.signatureId = dbFeedback.rows[0].id;
-            //console.log("SIGNATURE ID: ", req.session.signatureId);
+            console.log("SIGNATURE ID: ", req.session.signatureId);
             res.redirect("/thanks");
         })
         .catch((err) => {
@@ -195,11 +214,11 @@ app.post("/petition", (req, res) => {
 ///////////////////////////////
 
 app.get("/thanks", (req, res) => {
-    //console.log("SHOW SIGN ID IN THANKS: ", req.session.signatureId);
+    console.log("SHOW SIGN ID IN THANKS: ", req.session.signatureId);
     if (req.session.userID) {
         db.showSignature(req.session.userID)
             .then((userSignature) => {
-                console.log("results from show Signature: ", userSignature);
+                //console.log("results from show Signature: ", userSignature);
                 res.render("thanks", {
                     pageTitel: `Thank you`,
                     imgSignatureData: userSignature.rows[0].signature,
@@ -213,6 +232,17 @@ app.get("/thanks", (req, res) => {
     }
 });
 
+app.post("/thanks", (req, res) => {
+    db.deleteSignature(req.body.userID)
+        .then(() => {
+            req.session.signatureId = null;
+            res.redirect("/petition");
+        })
+        .catch((err) => {
+            console.log("error in deleteSignature:", err);
+        });
+});
+
 ///////////////////////////////
 //////////SIGNERS /////////////
 ///////////////////////////////
@@ -223,7 +253,7 @@ app.get("/signers", (req, res) => {
     } else {
         db.getAllSignersData()
             .then((allData) => {
-                console.log(allData.rows);
+                //console.log(allData.rows);
                 res.render("signers", {
                     pageTitel: `signers`,
                     signedNames: allData.rows,
@@ -232,7 +262,6 @@ app.get("/signers", (req, res) => {
             .catch((err) => {
                 console.log("error in getAllSignersData:", err);
             });
-        /* res.send("<!doctype html><title>Sign</title><p>Sign for our petition!"); */
     }
 });
 
@@ -290,7 +319,20 @@ app.post("/edit", (req, res) => {
             req.body.email,
             req.body.inputPw,
             req.session.userID
-        );
+        ).then(() => {
+            db.updateUserProfile(
+                req.body.age,
+                req.body.city,
+                req.body.homepage,
+                req.session.userID
+            )
+                .then(() => {
+                    res.redirect("/thanks");
+                })
+                .catch((err) => {
+                    console.log("error in updateUser:", err);
+                });
+        });
     } else {
         db.updateUserNoPw(
             req.body.firstName,

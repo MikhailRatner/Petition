@@ -1,9 +1,13 @@
 <h1>Welcome to the {{pageTitel}} page!</h1>
 
 <form action="" method="POST">
+    <label for="firstName">Your first name</label>
     <input name="firstName" type="text" id="inputFirstName">
+    <label for="lastName">Your last name</label>
     <input name="lastName" type="text" id="inputLastName">
+    <label for="email">Your email address</label>
     <input name="email" type="text" id="inputEmail">
+    <label for="inputPw">Your password</label>
     <input name="inputPw" type="text" id="inputPassword">
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <button>SUBMIT</button>

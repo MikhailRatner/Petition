@@ -26,7 +26,7 @@ module.exports.addUser = (firstName, lastName, email, password) => {
 
 module.exports.addProfile = (age, city, homepage, userID) => {
     const q = `INSERT INTO user_profiles (age, city, url, user_id)
-    VALUES ($1,$2,$3, $4)`;
+    VALUES ($1,$2,$3,$4)`;
     const params = [age, city, homepage, userID];
     return db.query(q, params);
 };
@@ -91,11 +91,9 @@ module.exports.showAmount = () => {
 };
 
 module.exports.updateUserNoPw = (firstName, lastName, email, userID) => {
-    const q = `INSERT INTO users (first, last, email)
-    VALUES ($1,$2,$3)
-    ON CONFLICT (id)
-    DO UPDATE SET first = ($1), last = ($2), email = ($3)
-    WHERE id = ($4)`;
+    const q = `UPDATE users
+    SET first = $1, last = $2, email = $3
+    WHERE id = $4`;
     const params = [firstName, lastName, email, userID];
     return db.query(q, params);
 };
@@ -107,22 +105,25 @@ module.exports.updateUserWithPw = (
     password,
     userID
 ) => {
-    const q = `INSERT INTO users (first, last, email, password)
-    VALUES ($1,$2,$3,$4)
-    ON CONFLICT (id)
-    DO UPDATE SET first = ($1), last = ($2), email = ($3), password = ($4)
-    WHERE id = ($5)`;
+    const q = `UPDATE users
+    SET first = $1, last = $2, email = $3, password = $4
+    WHERE id = $5`;
     const params = [firstName, lastName, email, password, userID];
     return db.query(q, params);
 };
 
-module.exportsupdateUserProfile = (age, city, homepage, userID) => {
-    const q = `INSERT INTO user_profiles (age, city, homepage)
-    VALUES ($1,$2,$3)
+module.exports.updateUserProfile = (age, city, homepage, userID) => {
+    const q = `INSERT INTO user_profiles (age, city, url, user_id)
+    VALUES ($1,$2,$3, $4)
     ON CONFLICT (user_id)
-    DO UPDATE SET age = ($1), city = ($2), homepage = ($3)
-    WHERE id = ($4)`;
+    DO UPDATE SET age = $1, city = $2, url = $3`;
     const params = [age, city, homepage, userID];
+    return db.query(q, params);
+};
+
+module.exports.deleteSignature = (userID) => {
+    const q = `DELETE FROM signatures WHERE user_id = $1`;
+    const params = [userID];
     return db.query(q, params);
 };
 

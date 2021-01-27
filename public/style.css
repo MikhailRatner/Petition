@@ -2,6 +2,11 @@ body {
     background-color: yellow;
 }
 
+.parent {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+}
+
 h1 {
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
         "Lucida Sans", Arial, sans-serif;
@@ -11,4 +16,50 @@ canvas {
     border: 3px solid black;
     width: 200px;
     height: 100px;
+}
+
+.navigation {
+    width: 100%;
+    /* background-color: black; */
+}
+
+#loginButtonImg {
+    width: 25px;
+    float: left;
+}
+
+.logout {
+    font-size: 0.8em;
+    font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+    position: relative;
+    right: -10px;
+    bottom: -4px;
+    overflow: hidden;
+    letter-spacing: 1px;
+    opacity: 0;
+    transition: opacity 0.45s;
+}
+
+.button {
+    text-decoration: none;
+    float: right;
+    padding: 12px;
+    margin: 15px;
+    color: white;
+    width: 25px;
+    background-color: rgb(85, 85, 254);
+    transition: width 0.35s;
+    overflow: hidden;
+}
+
+a:hover {
+    width: 100px;
+}
+
+a:hover .logout {
+    opacity: 0.9;
+}
+
+a {
+    text-decoration: none;
 }
