@@ -4,7 +4,8 @@
 <ul>
     <div>
         {{#signedNames}}
-        <li> <a href=`{{url}}`> {{first}} {{last}} </a> {{age}} {{city}} </li>
+        <li> <a href="{{url}}"> {{first}} {{last}} </a> {{age}}
+        <a href="/signers/{{city}}">{{city}}</a> </li>
         {{/signedNames}}
     </div>
 </ul>

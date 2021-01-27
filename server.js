@@ -1,3 +1,7 @@
+///////////////////////////////
+////// Require & Use //////////
+///////////////////////////////
+
 const express = require("express"); //requiring express
 const app = express(); //making instance of it
 
@@ -42,7 +46,10 @@ app.use(function (req, res, next) {
 const { hash, compare } = require("./bc");
 
 const db = require("./db"); // requiring our db module that holds all the db queries we want to run
-const spicedPg = require("spiced-pg");
+
+///////////////////////////////
+//////////REGISTER/////////////
+///////////////////////////////
 
 app.get("/register", (req, res) => {
     res.render("register", {
@@ -74,6 +81,10 @@ app.post("/register", (req, res) => {
             });
         });
 });
+
+///////////////////////////////
+////////// LOGIN  /////////////
+///////////////////////////////
 
 app.get("/login", (req, res) => {
     res.render("login", {
@@ -116,6 +127,42 @@ app.post("/login", (req, res) => {
     } */
 });
 
+///////////////////////////////
+//////////PROFILE/////////////
+///////////////////////////////
+
+app.get("/profile", (req, res) => {
+    if (!req.session.userID) {
+        res.redirect("/login");
+    } else {
+        res.render("profile", {
+            pageTitel: "profile",
+        });
+    }
+});
+
+app.post("/profile", (req, res) => {
+    db.addProfile(
+        req.body.age,
+        req.body.city,
+        req.body.homepage,
+        req.session.userID
+    )
+        .then(() => {
+            res.redirect("/petition");
+        })
+        .catch((err) => {
+            console.log("error in addProfile:", err);
+            res.render("profile", {
+                err: true,
+            });
+        });
+});
+
+///////////////////////////////
+//////////PETITION/////////////
+///////////////////////////////
+
 app.get("/petition", (req, res) => {
     if (req.session.signatureId) {
         res.redirect("/thanks");
@@ -143,33 +190,9 @@ app.post("/petition", (req, res) => {
         });
 });
 
-app.get("/profile", (req, res) => {
-    if (!req.session.userID) {
-        res.redirect("/login");
-    } else {
-        res.render("profile", {
-            pageTitel: "profile",
-        });
-    }
-});
-
-app.post("/profile", (req, res) => {
-    db.addProfile(
-        req.body.age,
-        req.body.city,
-        req.body.homepage,
-        req.session.userID
-    )
-        .then(() => {
-            res.redirect("/thanks");
-        })
-        .catch((err) => {
-            console.log("error in addProfile:", err);
-            res.render("profile", {
-                err: true,
-            });
-        });
-});
+///////////////////////////////
+////////// THANKS /////////////
+///////////////////////////////
 
 app.get("/thanks", (req, res) => {
     //console.log("SHOW SIGN ID IN THANKS: ", req.session.signatureId);
@@ -190,22 +213,104 @@ app.get("/thanks", (req, res) => {
     }
 });
 
+///////////////////////////////
+//////////SIGNERS /////////////
+///////////////////////////////
+
 app.get("/signers", (req, res) => {
     if (!req.session.userID) {
         res.redirect("/login");
     } else {
         db.getAllSignersData()
             .then((allData) => {
-                //console.log(allData.rows[0]);
+                console.log(allData.rows);
                 res.render("signers", {
                     pageTitel: `signers`,
-                    signedNames: allData.rows[0],
+                    signedNames: allData.rows,
                 });
             })
             .catch((err) => {
-                console.log("error in showNames:", err);
+                console.log("error in getAllSignersData:", err);
             });
         /* res.send("<!doctype html><title>Sign</title><p>Sign for our petition!"); */
+    }
+});
+
+app.get(`/signers/:city`, (req, res) => {
+    if (!req.session.userID) {
+        res.redirect("/login");
+    }
+    /* console.log("PARAMS: ", req.params.city); */
+    const { city } = req.params;
+    db.getAllSignersByCity(city).then((allSignersByCity) => {
+        //console.log(allSignersByCity.rows);
+        res.render("signers", {
+            pageTitel: `signers`,
+            signedNames: allSignersByCity.rows,
+        });
+    });
+});
+
+///////////////////////////////
+//////////  EDIT  /////////////
+///////////////////////////////
+
+app.get("/edit", (req, res) => {
+    console.log("COOKIE: ", req.session.userID);
+    if (!req.session.userID) {
+        res.redirect("/login");
+    }
+
+    db.getAllUserData(req.session.userID)
+        .then((allUserData) => {
+            //console.log(allUserData.rows[0]);
+            res.render("editProfile", {
+                pageTitel: `Edit`,
+                firstName: allUserData.rows[0].first,
+                lastName: allUserData.rows[0].last,
+                email: allUserData.rows[0].email,
+                age: allUserData.rows[0].age,
+                city: allUserData.rows[0].city,
+                homepage: allUserData.rows[0].url,
+            });
+        })
+        .catch((err) => {
+            console.log("error in getAllSignersData:", err);
+        });
+});
+
+app.post("/edit", (req, res) => {
+    console.log("COOKIE: ", req.session);
+    console.log(req.body);
+
+    if (req.body.inputPw) {
+        db.updateUserWithPw(
+            req.body.firstName,
+            req.body.lastName,
+            req.body.email,
+            req.body.inputPw,
+            req.session.userID
+        );
+    } else {
+        db.updateUserNoPw(
+            req.body.firstName,
+            req.body.lastName,
+            req.body.email,
+            req.session.userID
+        ).then(() => {
+            db.updateUserProfile(
+                req.body.age,
+                req.body.city,
+                req.body.homepage,
+                req.session.userID
+            )
+                .then(() => {
+                    res.redirect("/thanks");
+                })
+                .catch((err) => {
+                    console.log("error in updateUser:", err);
+                });
+        });
     }
 });
 
@@ -252,6 +357,16 @@ app.use(function (req, res, next) {
     next();
 });
 within your server.js
+*/
+
+/*
+For dynamic pages:
+
+app.get(`/signers/:city`
+
+const { city } = req.params;
+-> this will get the string at the end of the URL
+
 */
 
 /* -------------------------------------------------------------
