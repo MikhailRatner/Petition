@@ -333,7 +333,7 @@ app.get(`/signers/:city`, (req, res) => {
 ///////////////////////////////
 
 app.get("/edit", (req, res) => {
-    console.log("COOKIE: ", req.session.userID);
+    //console.log("COOKIE: ", req.session.userID);
     if (!req.session.userID) {
         res.redirect("/login");
     }
@@ -341,14 +341,10 @@ app.get("/edit", (req, res) => {
     db.getAllUserData(req.session.userID)
         .then((allUserData) => {
             //console.log(allUserData.rows[0]);
+
             res.render("editProfile", {
                 pageTitel: `Edit`,
-                firstName: allUserData.rows[0].first,
-                lastName: allUserData.rows[0].last,
-                email: allUserData.rows[0].email,
-                age: allUserData.rows[0].age,
-                city: allUserData.rows[0].city,
-                homepage: allUserData.rows[0].url,
+                allD: allUserData.rows,
             });
         })
         .catch((err) => {
@@ -357,12 +353,8 @@ app.get("/edit", (req, res) => {
 });
 
 app.post("/edit", (req, res) => {
-    console.log("COOKIE: ", req.session);
-    console.log(req.body);
-
-    if (!req.body.homepage.startsWith("http")) {
-        req.body.homepage = "https://" + req.body.homepage;
-    }
+    /*     console.log("COOKIE: ", req.session);
+    console.log("BODY: ", req.body); */
 
     if (req.body.inputPw) {
         db.updateUserWithPw(
@@ -371,21 +363,7 @@ app.post("/edit", (req, res) => {
             req.body.email,
             req.body.inputPw,
             req.session.userID
-        ).then(() => {
-            // zou can do cleanup here
-            db.updateUserProfile(
-                req.body.age,
-                req.body.city,
-                req.body.homepage,
-                req.session.userID
-            )
-                .then(() => {
-                    res.redirect("/thanks");
-                })
-                .catch((err) => {
-                    console.log("error in updateUser:", err);
-                });
-        });
+        );
     } else {
         db.updateUserNoPw(
             req.body.firstName,
@@ -393,6 +371,14 @@ app.post("/edit", (req, res) => {
             req.body.email,
             req.session.userID
         ).then(() => {
+            if (
+                !req.body.homepage.startsWith("http") &&
+                req.body.homepage.length > 0
+            ) {
+                //console.log(req.body.homepage.length);
+                req.body.homepage = "http://" + req.body.homepage;
+                //console.log(req.body.homepage);
+            }
             db.updateUserProfile(
                 req.body.age,
                 req.body.city,
@@ -467,6 +453,15 @@ app.get(`/signers/:city`
 const { city } = req.params;
 -> this will get the string at the end of the URL
 
+*/
+
+/*
+firstName: allUserData.rows[0].first,
+lastName: allUserData.rows[0].last,
+email: allUserData.rows[0].email,
+age: allUserData.rows[0].age,
+city: allUserData.rows[0].city,
+homepage: allUserData.rows[0].url,
 */
 
 /* -------------------------------------------------------------
