@@ -6,8 +6,13 @@
 <ul>
     <div>
         {{#signedNames}}
-        <li> <a href="{{url}}"> {{first}} {{last}} </a> {{age}}
-        <a href="/signers/{{city}}">{{city}}</a> </li>
+            {{#if url}}
+            <li> <a href="{{url}}"> {{first}} {{last}} </a> {{age}}
+            <a href="/signers/{{city}}">{{city}}</a> </li>
+            {{else}}
+            <li> {{first}} {{last}} {{age}}
+            <a href="/signers/{{city}}">{{city}}</a> </li>
+            {{/if}}
         {{/signedNames}}
     </div>
 </ul>

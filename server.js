@@ -52,6 +52,10 @@ const db = require("./db"); // requiring our db module that holds all the db que
 ///////////////////////////////
 
 app.get("/", (req, res) => {
+    res.redirect("/home");
+});
+
+app.get("/home", (req, res) => {
     res.render("home", {
         pageTitel: "Home",
     });
@@ -103,17 +107,23 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-    console.log("INPUT EMAIL: ", req.body.email);
+    console.log("INPUT : ", req.body);
     db.getUserDataByMail(req.body.email)
         .then((dbFeedback) => {
-            //console.log("DB FEEDBACK PASSWORD: ", dbFeedback.rows[0].password);
-            compare(req.body.inputPw, dbFeedback.rows[0].password).then(
+            console.log("DB FEEDBACK: ", dbFeedback.rows[0]);
+            return compare(req.body.inputPw, dbFeedback.rows[0].password).then(
                 (match) => {
                     console.log("VALUE FROM COMPARE: ", match);
                     if (match == true) {
-                        req.session.userID = dbFeedback.rows[0].id;
-                        console.log(req.session.userID);
-                        res.redirect("/petition");
+                        req.session.userID = dbFeedback.rows[0].userid;
+                        //console.log("USER ID", req.session.userID);
+                        req.session.signatureId = dbFeedback.rows[0].sigid;
+                        //console.log("SIGN ID", req.session.signatureId);
+                        if (req.session.signatureId) {
+                            res.redirect("/thanks");
+                        } else {
+                            res.redirect("/petition");
+                        }
                     } else {
                         res.render("login", {
                             err: true,
@@ -153,21 +163,44 @@ app.get("/profile", (req, res) => {
 });
 
 app.post("/profile", (req, res) => {
-    db.addProfile(
-        req.body.age,
-        req.body.city,
-        req.body.homepage,
-        req.session.userID
-    )
-        .then(() => {
-            res.redirect("/petition");
-        })
-        .catch((err) => {
-            console.log("error in addProfile:", err);
-            res.render("profile", {
-                err: true,
+    //if url doesn't start with  http or https - clean it up
+    // and insert the clena up in the db
+    if (!req.body.homepage.startsWith("http")) {
+        req.body.homepage = "https://" + req.body.homepage;
+        console.log("SCRIPT: ", req.body.homepage);
+        db.addProfile(
+            req.body.age,
+            req.body.city,
+            req.body.homepage,
+            req.session.userID
+        )
+            .then(() => {
+                res.redirect("/petition");
+            })
+            .catch((err) => {
+                console.log("error in addProfile:", err);
+                res.render("profile", {
+                    err: true,
+                });
             });
-        });
+    } else {
+        console.log("SCRIPT: ", req.body.homepage);
+        db.addProfile(
+            req.body.age,
+            req.body.city,
+            req.body.homepage,
+            req.session.userID
+        )
+            .then(() => {
+                res.redirect("/petition");
+            })
+            .catch((err) => {
+                console.log("error in addProfile:", err);
+                res.render("profile", {
+                    err: true,
+                });
+            });
+    }
 });
 
 ///////////////////////////////
@@ -177,31 +210,35 @@ app.post("/profile", (req, res) => {
 app.get("/petition", (req, res) => {
     if (!req.session.userID) {
         res.redirect("/register");
-    } else {
-        db.showSignature(req.session.userID)
-            .then((userSignature) => {
-                console.log("results from show Signature: ", userSignature);
-                /* I TESTED THIS BUT IT ALSO DOES NOT WORK: if (req.session.signatureId)  */
-                if (
-                    req.session.signatureId ||
-                    userSignature.rows[0].signature == undefined ||
-                    userSignature.rows[0].signature != null
-                ) {
-                    res.redirect("/thanks");
-                } else {
-                    res.render("petition", {
-                        //layout: "main",
-                        pageTitel: "Petition signing",
-                    });
-                }
-            })
-            .catch((err) => {
-                console.log("error in showSignature:", err);
-                res.render("petition", {
-                    err: true,
-                });
-            });
     }
+    if (req.session.signatureId) {
+        res.redirect("/thanks");
+    } else {
+        res.render("petition", {
+            //layout: "main",
+            pageTitel: "Petition signing",
+        });
+    }
+
+    // else {
+    //     db.showSignature(req.session.userID)
+    //         .then((userSignature) => {
+    //             console.log("results from show Signature: ", userSignature);
+    //             if (typeof userSignature.rows[0] == "undefined") {
+
+    //             } /* else if (req.session.signatureId != null) {
+    //                 res.redirect("/thanks");
+    //             } */ else {
+    //                 res.redirect("/thanks");
+    //             }
+    //         })
+    //         .catch((err) => {
+    //             console.log("error in showSignature:", err);
+    //             res.render("petition", {
+    //                 err: true,
+    //             });
+    //         });
+    // }
 });
 
 app.post("/petition", (req, res) => {
@@ -225,11 +262,11 @@ app.post("/petition", (req, res) => {
 ///////////////////////////////
 
 app.get("/thanks", (req, res) => {
-    console.log("SHOW SIGN ID IN THANKS: ", req.session.signatureId);
+    //console.log("SHOW SIGN ID IN THANKS: ", req.session.signatureId);
     if (req.session.userID) {
         db.showSignature(req.session.userID)
             .then((userSignature) => {
-                //console.log("results from show Signature: ", userSignature);
+                console.log("results from show Signature: ", userSignature);
                 res.render("thanks", {
                     pageTitel: `Thank you`,
                     imgSignatureData: userSignature.rows[0].signature,
@@ -323,6 +360,10 @@ app.post("/edit", (req, res) => {
     console.log("COOKIE: ", req.session);
     console.log(req.body);
 
+    if (!req.body.homepage.startsWith("http")) {
+        req.body.homepage = "https://" + req.body.homepage;
+    }
+
     if (req.body.inputPw) {
         db.updateUserWithPw(
             req.body.firstName,
@@ -331,6 +372,7 @@ app.post("/edit", (req, res) => {
             req.body.inputPw,
             req.session.userID
         ).then(() => {
+            // zou can do cleanup here
             db.updateUserProfile(
                 req.body.age,
                 req.body.city,
@@ -365,6 +407,11 @@ app.post("/edit", (req, res) => {
                 });
         });
     }
+});
+
+app.get("/logout", (req, res) => {
+    req.session = null;
+    res.redirect("/home");
 });
 
 //Start listening for requests.

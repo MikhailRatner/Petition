@@ -32,7 +32,11 @@ module.exports.addProfile = (age, city, homepage, userID) => {
 };
 
 module.exports.getUserDataByMail = (email) => {
-    const q = `SELECT * FROM users WHERE email = ($1)`;
+    const q = `SELECT users.id AS userid, users.password, signatures.id AS sigid
+    FROM users
+    LEFT JOIN signatures
+    ON users.id = signatures.user_id
+    WHERE email = ($1)`;
     const params = [email];
     return db.query(q, params);
 };
