@@ -12,7 +12,7 @@ if (process.env.DATABASE_URL) {
 
 const db = spicedPg(
     process.env.DATABSE_URL ||
-        `postgres:postgres:postgres@localhost:5432/petition`
+        "postgres:postgres:postgres@localhost:5432/petition"
 );
 
 // spicedPg('whoDoWeWantToTalkTo:whichUserShouldBeRunningOurQueries:whatPasswordDoesThisUserHave@WhereDoesThisCommuncationHappen:specifiedPortForCommunication/NameOfOurDatabase)
