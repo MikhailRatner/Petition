@@ -26,7 +26,7 @@ module.exports.addUser = (firstName, lastName, email, password) => {
 
 module.exports.addProfile = (age, city, homepage, userID) => {
     const q = `INSERT INTO user_profiles (age, city, url, user_id)
-    VALUES ($1,$2,$3,$4)`;
+    VALUES ($1,$2,$3,$4) RETURNING id`;
     const params = [age, city, homepage, userID];
     return db.query(q, params);
 };

@@ -178,18 +178,29 @@ app.get("/petition", (req, res) => {
     if (!req.session.userID) {
         res.redirect("/register");
     } else {
-        db.showSignature(req.session.userID).then((userSignature) => {
-            console.log("results from show Signature: ", userSignature);
-            /* I TESTED THIS BUT IT ALSO DOES NOT WORK:  if (userSignature.rows[0].signature != null) */
-            if (req.session.signatureId) {
-                res.redirect("/thanks");
-            } else {
+        db.showSignature(req.session.userID)
+            .then((userSignature) => {
+                console.log("results from show Signature: ", userSignature);
+                /* I TESTED THIS BUT IT ALSO DOES NOT WORK: if (req.session.signatureId)  */
+                if (
+                    req.session.signatureId ||
+                    userSignature.rows[0].signature == undefined ||
+                    userSignature.rows[0].signature != null
+                ) {
+                    res.redirect("/thanks");
+                } else {
+                    res.render("petition", {
+                        //layout: "main",
+                        pageTitel: "Petition signing",
+                    });
+                }
+            })
+            .catch((err) => {
+                console.log("error in showSignature:", err);
                 res.render("petition", {
-                    //layout: "main",
-                    pageTitel: "Petition signing",
+                    err: true,
                 });
-            }
-        });
+            });
     }
 });
 
@@ -233,7 +244,7 @@ app.get("/thanks", (req, res) => {
 });
 
 app.post("/thanks", (req, res) => {
-    db.deleteSignature(req.body.userID)
+    db.deleteSignature(req.session.userID)
         .then(() => {
             req.session.signatureId = null;
             res.redirect("/petition");
