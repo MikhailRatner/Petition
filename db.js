@@ -11,7 +11,7 @@ if (process.env.DATABASE_URL) {
 } */
 
 const db = spicedPg(
-    process.env.DATABSE_URL ||
+    process.env.DATABASE_URL ||
         "postgres:postgres:postgres@localhost:5432/petition"
 );
 
