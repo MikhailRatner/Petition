@@ -1,9 +1,13 @@
 <h1>{{pageTitel}} page</h1>
 
 <form action="" method="POST">
+    <label for="email">Your email address</label>
     <input name="email" type="text" id="inputEmail">
+    <label for="inputPw">Your password</label>
     <input name="inputPw" type="text" id="inputPassword">
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <button>SUBMIT</button>
 </form>
 <div>{{> error }}</div>
+
+<p>Don't have an account yet? Register <a href="/register">here</a></p>
