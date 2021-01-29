@@ -162,7 +162,7 @@ app.post("/profile", (req, res) => {
     if (!req.body.homepage.startsWith("http") && req.body.homepage.length > 0) {
         req.body.homepage = "http://" + req.body.homepage;
         //console.log("SCRIPT: ", req.body.homepage);
-        db.addProfile(
+        db.updateUserProfile(
             req.body.age,
             req.body.city,
             req.body.homepage,
@@ -179,7 +179,7 @@ app.post("/profile", (req, res) => {
             });
     } else {
         //console.log("SCRIPT: ", req.body.homepage);
-        db.addProfile(
+        db.updateUserProfile(
             req.body.age,
             req.body.city,
             req.body.homepage,
