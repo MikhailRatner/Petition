@@ -1,18 +1,20 @@
 {{> logoutButton }}
 
-<h1>Welcome to the {{pageTitel}} page!</h1>
+<h1>{{pageTitel}} page</h1>
 
 <form action="" method="POST">
     {{#allD}}
-    <input value="{{first}}" name="firstName" type="text" id="inputFirstName">
-    <input value="{{last}}" name="lastName" type="text" id="inputLastName">
-    <input value="{{email}}" name="email" type="text" id="inputEmail">
-    <input placeholder="New Password" name="inputPw" type="text" id="inputPassword">
-    <input value="{{age}}" name="age" type="text" id="inputAge">
-    <input value="{{city}}" name="city" type="text" id="inputCity">
-    <input value="{{url}}" name="homepage" type="text" id="inputHomepage">
+    <input value="{{first}}" placeholder="Your first name" name="firstName" type="text" id="inputFirstName">
+    <input value="{{last}}" placeholder="Your last name" name="lastName" type="text" id="inputLastName">
+    <input value="{{email}}" placeholder="Your email" name="email" type="text" id="inputEmail">
+    <input placeholder="New password" name="inputPw" type="text" id="inputPassword">
+    <input value="{{age}}" placeholder="Your age" name="age" type="text" id="inputAge">
+    <input value="{{city}}" placeholder="Your city" name="city" type="text" id="inputCity">
+    <input value="{{url}}" placeholder="Your homepage" name="homepage" type="text" id="inputHomepage">
     {{/allD}}
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <button>SUBMIT CHANGES</button>
 </form>
 <div>{{> error }}</div>
+
+<p>Click <a href="/signers">here</a> to find about who else singed this petiton and <a href="/thanks">here</a> to see or delete your signature.</p>

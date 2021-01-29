@@ -1,11 +1,11 @@
 {{> logoutButton }}
 
-<h1>Welcome to the {{pageTitel}} page!</h1>
+<h1>{{pageTitel}} page</h1>
 
 <form action="" method="POST">
 
     <input name="signature" type="hidden" id="inputSignature">
-<input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <button>SUBMIT</button>
     <canvas width="200" height="100" id="canvasSignature" ></canvas>
 </form>

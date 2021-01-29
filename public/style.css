@@ -1,5 +1,25 @@
 body {
-    background-color: yellow;
+    display: grid;
+    height: 100vh;
+    grid-template-rows: auto 1fr auto;
+    background-image: url("https://images.pexels.com/photos/2694434/pexels-photo-2694434.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260");
+    background-size: cover;
+    /* color: #0393b5; */
+    color: rgb(227, 197, 197);
+    font-family: Alfa Slab One;
+}
+
+header {
+    padding: 2rem;
+    background-color: rgb(40, 40, 40);
+    z-index: 20;
+}
+
+footer {
+    /* position: absolute; */
+    z-index: 19;
+    padding: 2rem;
+    text-align: center;
 }
 
 .parent {
@@ -8,18 +28,28 @@ body {
 }
 
 h1 {
-    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
-        "Lucida Sans", Arial, sans-serif;
+    margin: 0;
 }
 
 canvas {
-    border: 3px solid black;
+    border: 5px solid black;
+    width: 200px;
+    height: 100px;
+    background-color: white;
+}
+
+#imgCanvas {
+    background: white;
     width: 200px;
     height: 100px;
 }
 
 .navigation {
     width: 100%;
+    position: absolute;
+    z-index: 21;
+    top: 0;
+    right: 0;
     /* background-color: black; */
 }
 
@@ -62,4 +92,25 @@ a:hover .logout {
 
 a {
     text-decoration: none;
+}
+
+div.sglspread {
+    width: 100%;
+    height: 80%;
+    margin: 0 auto;
+    overflow: hidden;
+}
+.text-holder {
+    width: 50%;
+}
+
+.left {
+    float: left;
+}
+
+.pg1-2-txt {
+    width: 80%;
+    text-align: center;
+    margin: 0 auto;
+    padding: 1em;
 }

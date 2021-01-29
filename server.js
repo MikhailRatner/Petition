@@ -46,6 +46,12 @@ app.use(function (req, res, next) {
 const { hash, compare } = require("./bc");
 
 const db = require("./db"); // requiring our db module that holds all the db queries we want to run
+const {
+    requireLoggedOutUser,
+    requireLoggedInUser,
+    requireSignature,
+    requireNoSignature,
+} = require("./middleware");
 
 ///////////////////////////////
 //////////HOMEPAGE/////////////
@@ -65,7 +71,7 @@ app.get("/home", (req, res) => {
 //////////REGISTER/////////////
 ///////////////////////////////
 
-app.get("/register", (req, res) => {
+app.get("/register", requireLoggedOutUser, (req, res) => {
     res.render("register", {
         pageTitel: "Registration",
     });
@@ -100,20 +106,20 @@ app.post("/register", (req, res) => {
 ////////// LOGIN  /////////////
 ///////////////////////////////
 
-app.get("/login", (req, res) => {
+app.get("/login", requireLoggedOutUser, (req, res) => {
     res.render("login", {
         pageTitel: "Login",
     });
 });
 
 app.post("/login", (req, res) => {
-    console.log("INPUT : ", req.body);
+    //console.log("INPUT : ", req.body);
     db.getUserDataByMail(req.body.email)
         .then((dbFeedback) => {
-            console.log("DB FEEDBACK: ", dbFeedback.rows[0]);
+            //console.log("DB FEEDBACK: ", dbFeedback.rows[0]);
             return compare(req.body.inputPw, dbFeedback.rows[0].password).then(
                 (match) => {
-                    console.log("VALUE FROM COMPARE: ", match);
+                    //console.log("VALUE FROM COMPARE: ", match);
                     if (match == true) {
                         req.session.userID = dbFeedback.rows[0].userid;
                         //console.log("USER ID", req.session.userID);
@@ -138,36 +144,24 @@ app.post("/login", (req, res) => {
                 err: true,
             });
         });
-    /*     if ((password = userPassword)) {
-        if (signature) {
-            res.redirect("/thanks");
-        } else {
-            res.redirect("/petition");
-        }
-    } */
 });
 
 ///////////////////////////////
 //////////PROFILE/////////////
 ///////////////////////////////
 
-app.get("/profile", (req, res) => {
-    if (!req.session.userID) {
-        res.redirect("/login");
-    } else {
-        res.render("profile", {
-            pageTitel: "profile",
-            /* logut: "logoutButton", */
-        });
-    }
+app.get("/profile", requireLoggedInUser, (req, res) => {
+    res.render("profile", {
+        pageTitel: "Profile",
+    });
 });
 
 app.post("/profile", (req, res) => {
     //if url doesn't start with  http or https - clean it up
-    // and insert the clena up in the db
-    if (!req.body.homepage.startsWith("http")) {
-        req.body.homepage = "https://" + req.body.homepage;
-        console.log("SCRIPT: ", req.body.homepage);
+    // and insert the cleaned up version in the db
+    if (!req.body.homepage.startsWith("http") && req.body.homepage.length > 0) {
+        req.body.homepage = "http://" + req.body.homepage;
+        //console.log("SCRIPT: ", req.body.homepage);
         db.addProfile(
             req.body.age,
             req.body.city,
@@ -184,7 +178,7 @@ app.post("/profile", (req, res) => {
                 });
             });
     } else {
-        console.log("SCRIPT: ", req.body.homepage);
+        //console.log("SCRIPT: ", req.body.homepage);
         db.addProfile(
             req.body.age,
             req.body.city,
@@ -207,50 +201,23 @@ app.post("/profile", (req, res) => {
 //////////PETITION/////////////
 ///////////////////////////////
 
-app.get("/petition", (req, res) => {
-    if (!req.session.userID) {
-        res.redirect("/register");
-    }
-    if (req.session.signatureId) {
-        res.redirect("/thanks");
-    } else {
-        res.render("petition", {
-            //layout: "main",
-            pageTitel: "Petition signing",
-        });
-    }
-
-    // else {
-    //     db.showSignature(req.session.userID)
-    //         .then((userSignature) => {
-    //             console.log("results from show Signature: ", userSignature);
-    //             if (typeof userSignature.rows[0] == "undefined") {
-
-    //             } /* else if (req.session.signatureId != null) {
-    //                 res.redirect("/thanks");
-    //             } */ else {
-    //                 res.redirect("/thanks");
-    //             }
-    //         })
-    //         .catch((err) => {
-    //             console.log("error in showSignature:", err);
-    //             res.render("petition", {
-    //                 err: true,
-    //             });
-    //         });
-    // }
+app.get("/petition", requireLoggedInUser, requireNoSignature, (req, res) => {
+    res.render("petition", {
+        //layout: "main",
+        pageTitel: "Petition signing",
+    });
 });
 
 app.post("/petition", (req, res) => {
-    console.log("START PETITION: ", req.body); //gives an object, so we have to look for the row property
+    //console.log("START PETITION: ", req.body); //gives an object, so we have to look for the row property
     db.addSignature(req.body.signature, req.session.userID)
         .then((dbFeedback) => {
             req.session.signatureId = dbFeedback.rows[0].id;
-            console.log("SIGNATURE ID: ", req.session.signatureId);
+            //console.log("SIGNATURE ID: ", req.session.signatureId);
             res.redirect("/thanks");
         })
         .catch((err) => {
-            console.log("error in addSignature:", err);
+            //console.log("error in addSignature:", err);
             res.render("petition", {
                 err: true,
             });
@@ -261,23 +228,19 @@ app.post("/petition", (req, res) => {
 ////////// THANKS /////////////
 ///////////////////////////////
 
-app.get("/thanks", (req, res) => {
+app.get("/thanks", requireLoggedInUser, requireSignature, (req, res) => {
     //console.log("SHOW SIGN ID IN THANKS: ", req.session.signatureId);
-    if (req.session.userID) {
-        db.showSignature(req.session.userID)
-            .then((userSignature) => {
-                console.log("results from show Signature: ", userSignature);
-                res.render("thanks", {
-                    pageTitel: `Thank you`,
-                    imgSignatureData: userSignature.rows[0].signature,
-                });
-            })
-            .catch((err) => {
-                console.log("error in showSignature:", err);
+    db.showSignature(req.session.userID)
+        .then((userSignature) => {
+            //console.log("results from show Signature: ", userSignature);
+            res.render("thanks", {
+                pageTitel: `Thank you`,
+                imgSignatureData: userSignature.rows[0].signature,
             });
-    } else {
-        res.redirect("/register");
-    }
+        })
+        .catch((err) => {
+            console.log("error in showSignature:", err);
+        });
 });
 
 app.post("/thanks", (req, res) => {
@@ -295,28 +258,21 @@ app.post("/thanks", (req, res) => {
 //////////SIGNERS /////////////
 ///////////////////////////////
 
-app.get("/signers", (req, res) => {
-    if (!req.session.userID) {
-        res.redirect("/login");
-    } else {
-        db.getAllSignersData()
-            .then((allData) => {
-                //console.log(allData.rows);
-                res.render("signers", {
-                    pageTitel: `signers`,
-                    signedNames: allData.rows,
-                });
-            })
-            .catch((err) => {
-                console.log("error in getAllSignersData:", err);
+app.get("/signers", requireLoggedInUser, requireSignature, (req, res) => {
+    db.getAllSignersData()
+        .then((allData) => {
+            //console.log(allData.rows);
+            res.render("signers", {
+                pageTitel: `Signers`,
+                signedNames: allData.rows,
             });
-    }
+        })
+        .catch((err) => {
+            console.log("error in getAllSignersData:", err);
+        });
 });
 
-app.get(`/signers/:city`, (req, res) => {
-    if (!req.session.userID) {
-        res.redirect("/login");
-    }
+app.get(`/signers/:city`, requireLoggedInUser, requireSignature, (req, res) => {
     /* console.log("PARAMS: ", req.params.city); */
     const { city } = req.params;
     db.getAllSignersByCity(city).then((allSignersByCity) => {
@@ -332,18 +288,14 @@ app.get(`/signers/:city`, (req, res) => {
 //////////  EDIT  /////////////
 ///////////////////////////////
 
-app.get("/edit", (req, res) => {
+app.get("/edit", requireLoggedInUser, (req, res) => {
     //console.log("COOKIE: ", req.session.userID);
-    if (!req.session.userID) {
-        res.redirect("/login");
-    }
-
     db.getAllUserData(req.session.userID)
         .then((allUserData) => {
             //console.log(allUserData.rows[0]);
 
             res.render("editProfile", {
-                pageTitel: `Edit`,
+                pageTitel: `Edit your profile`,
                 allD: allUserData.rows,
             });
         })
@@ -353,9 +305,6 @@ app.get("/edit", (req, res) => {
 });
 
 app.post("/edit", (req, res) => {
-    /*     console.log("COOKIE: ", req.session);
-    console.log("BODY: ", req.body); */
-
     if (req.body.inputPw) {
         db.updateUserWithPw(
             req.body.firstName,
@@ -363,7 +312,28 @@ app.post("/edit", (req, res) => {
             req.body.email,
             req.body.inputPw,
             req.session.userID
-        );
+        ).then(() => {
+            if (
+                !req.body.homepage.startsWith("http") &&
+                req.body.homepage.length > 0
+            ) {
+                //console.log(req.body.homepage.length);
+                req.body.homepage = "http://" + req.body.homepage;
+                //console.log(req.body.homepage);
+            }
+            db.updateUserProfile(
+                req.body.age,
+                req.body.city,
+                req.body.homepage,
+                req.session.userID
+            )
+                .then(() => {
+                    res.redirect("/thanks");
+                })
+                .catch((err) => {
+                    console.log("error in updateUserWithPw:", err);
+                });
+        });
     } else {
         db.updateUserNoPw(
             req.body.firstName,
@@ -389,13 +359,13 @@ app.post("/edit", (req, res) => {
                     res.redirect("/thanks");
                 })
                 .catch((err) => {
-                    console.log("error in updateUser:", err);
+                    console.log("error in updateUserNoPw:", err);
                 });
         });
     }
 });
 
-app.get("/logout", (req, res) => {
+app.get("/logout", requireLoggedInUser, (req, res) => {
     req.session = null;
     res.redirect("/home");
 });
@@ -463,6 +433,27 @@ age: allUserData.rows[0].age,
 city: allUserData.rows[0].city,
 homepage: allUserData.rows[0].url,
 */
+
+// CODE WORKED BUT IT IS BETTER TO CHECK EVERYTHING AT ONCE DURING LOGIN, NOT requiering things afterwards
+// else {
+//     db.showSignature(req.session.userID)
+//         .then((userSignature) => {
+//             console.log("results from show Signature: ", userSignature);
+//             if (typeof userSignature.rows[0] == "undefined") {
+
+//             } /* else if (req.session.signatureId != null) {
+//                 res.redirect("/thanks");
+//             } */ else {
+//                 res.redirect("/thanks");
+//             }
+//         })
+//         .catch((err) => {
+//             console.log("error in showSignature:", err);
+//             res.render("petition", {
+//                 err: true,
+//             });
+//         });
+// }
 
 /* -------------------------------------------------------------
 // getting information from our db

@@ -1,11 +1,10 @@
 {{> logoutButton }}
 
-<h1>This is the {{pageTitel}} page!</h1>
+<h1>{{pageTitel}} page</h1>
 <h2>This are some people who signed this petition as well:</h2>
 
 <ul>
-    <div>
-        {{#signedNames}}
+    {{#signedNames}}
             {{#if url}}
             <li> <a href="{{url}}"> {{first}} {{last}} </a> {{age}}
             <a href="/signers/{{city}}">{{city}}</a> </li>
@@ -13,6 +12,7 @@
             <li> {{first}} {{last}} {{age}}
             <a href="/signers/{{city}}">{{city}}</a> </li>
             {{/if}}
-        {{/signedNames}}
-    </div>
+    {{/signedNames}}    
 </ul>
+
+<p>Click <a href="/thanks">here</a> to see or delete your signature and <a href="/edit">here</a> to edit your profile.</p>

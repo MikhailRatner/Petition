@@ -1,11 +1,11 @@
 {{> logoutButton }}
 
-<h1>Welcome to the {{pageTitel}} page!</h1>
+<h1>{{pageTitel}} page</h1>
 
 <form action="" method="POST">
-    <input name="age" type="text" id="inputAge">
-    <input name="city" type="text" id="inputCity">
-    <input name="homepage" type="text" id="inputHomepage">
+    <input placeholder="Your age" name="age" type="text" id="inputAge">
+    <input placeholder="Your city" name="city" type="text" id="inputCity">
+    <input placeholder="Your homepage" name="homepage" type="text" id="inputHomepage">
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
     <button>CONTINUE</button>
 </form>

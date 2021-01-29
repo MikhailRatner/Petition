@@ -1,11 +1,14 @@
 {{> logoutButton }}
 
-<h1>This is the {{pageTitel}} page!</h1>
+<h1>{{pageTitel}} page</h1>
 <h2>Thank you for signing!</h2>
 
+<div id="imgCanvas">
 <img src="{{imgSignatureData}}" alt="">
+</div>
 
-<p>Click <a href="/signers">here</a> to find about who else singed this petiton</p>
+
+<p>Click <a href="/signers">here</a> to find out who else singed this petiton and <a href="/edit">here</a> to edit your profile.</p>
 <form action="" method="POST">
     <button>DELETE SIGNATURE</button>
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
